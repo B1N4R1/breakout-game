@@ -19,8 +19,8 @@ var circle = {
     x: 200,
     y: 200,
     size: 10,
-    dx: 5,
-    dy: 4,
+    dx: 4,
+    dy: 3,
     color: "#3498db"
 }
 
@@ -39,6 +39,12 @@ for (let i = 0; i < brickRows; i++) {
     bricks[i] = [];
     for (let j = 0; j < brickCols; j++) {
         
+        if (i != 6 && j != 3) {
+         
+
+
+        }
+
         const x = i * (brickInfo.width + brickInfo.padding) + brickInfo.offsetX;
         const y = j * (brickInfo.height + brickInfo.padding) + brickInfo.offsetY;
         bricks[i][j] = {x, y, ...brickInfo}
@@ -46,6 +52,8 @@ for (let i = 0; i < brickRows; i++) {
     }
     
 }
+
+console.table(bricks);
 
 var animProp = {
 
@@ -59,6 +67,7 @@ function drawCircle() {
     context.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
     context.fillStyle = circle.color;
     context.fill();
+    context.closePath();
   
 }
 
@@ -93,8 +102,8 @@ function draw(){
 
     drawCircle();
     drawPaddle();
-    drawBricks();
     drawScore();
+    drawBricks();
 
 }
 
@@ -106,7 +115,7 @@ function animate(){
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // draw  
-        draw(paddle, circle, canvas);
+        draw();
 
         //paddle movement
         canvas.addEventListener('mousedown', e => {
@@ -127,7 +136,7 @@ function animate(){
         circle.y += circle.dy;
     
         // Detect collision, right & left
-        if (circle.x + circle.size > canvas.width || circle.x - circle.size < 0) {
+        if (circle.y + circle.size > canvas.height || circle.x + circle.size > canvas.width || circle.x - circle.size < 0) {
     
             circle.dx *= -1;
 
@@ -136,7 +145,7 @@ function animate(){
         }
     
         // Detect collision, top & bottom
-        if (circle.y + circle.size > canvas.height || circle.y - circle.size < 0) {
+        if (circle.y - circle.size < 0) {
     
             circle.dy *= -1;
 
@@ -145,20 +154,78 @@ function animate(){
         }
 
 
+        // Detect bottom  collision, restart game
+        if (circle.y + circle.size > canvas.height) {
+            
+            showAllBricks();
+
+            score = 0;
+
+        }
+
         // Detect paddle
         
         if (circle.x - circle.size > paddle.x - paddle.width && 
             circle.x + circle.size < paddle.x + paddle.width && 
-            circle.y + circle.size > paddle.y
+            circle.y + circle.size > paddle.y &&
+            circle.y - circle.size < paddle.y + paddle.height
         ) {
             
            circle.dy *= -1;
 
         }
 
+        // Brick collision
+        bricks.forEach(col => {
+            col.forEach(brick => {
+
+                if (brick.visible) {
+                    
+                    if (circle.x - circle.size > brick.x && 
+                        circle.x + circle.size < brick.x + brick.width &&
+                        circle.y + circle.size > brick.y &&
+                        circle.y - circle.size < brick.y + brick.height
+                    ) {
+                        
+                        circle.dy *= -1;
+                        brick.visible = false;
+                        
+                        increaseScore();
+            
+                    }
+
+                }
+
+            })
+        })
+
         requestAnimationFrame(animate);
 
     }  
+}
+
+function increaseScore(){
+
+    score++;
+
+    if (score % (brickRows * brickCols) === 0) {
+        
+        showAllBricks();
+
+    }
+
+}
+
+function showAllBricks(){
+
+    bricks.forEach(col => {
+        col.forEach(brick => {
+
+            brick.visible = true;
+
+        })
+    })
+
 }
 
 function randColor(){
