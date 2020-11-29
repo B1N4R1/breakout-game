@@ -145,7 +145,7 @@ function animate(){
         }
     
         // Detect collision, top & bottom
-        if (circle.y - circle.size < 0) {
+        if (circle.y - circle.size < 0 || circle.y + circle.size > canvas.height) {
     
             circle.dy *= -1;
 
